@@ -180,7 +180,7 @@ async def trigger_scraping(
     """
     # Em um cenário real, aqui você chamaria a lógica de scraping.
     # Por exemplo: os.system("python scripts/scraper.py")
-    return {"message": f"Scraping triggered by {current_user.username}. (Simulated)"}
+    return {"message": f"Scraping disparado por {current_user.username}. (Simulado)"}
 
 # Inclui o roteador de autenticação na aplicação principal
 app.include_router(auth_routes.router)
