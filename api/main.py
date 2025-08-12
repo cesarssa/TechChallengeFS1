@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import pandas as pd
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Annotated
 
 # Importa as funções de insights
 from api.insights import (
@@ -10,6 +10,9 @@ from api.insights import (
     get_top_rated_books,
     get_books_in_price_range
 )
+
+# Importa o roteador de autenticação
+from api.auth import routes as auth_routes, deps as auth_deps, schemas as auth_schemas
 
 # Cria a instância da aplicação FastAPI
 app = FastAPI(
@@ -165,3 +168,19 @@ def get_category_stats():
     if df_books.empty:
         raise HTTPException(status_code=404, detail="Dados de livros não disponíveis.")
     return get_stats_by_category(df_books.copy())
+
+# --- Endpoints Protegidos ---
+
+@app.post("/api/v1/scraping/trigger", tags=["Scraping"])
+async def trigger_scraping(
+    current_user: Annotated[auth_schemas.User, Depends(auth_deps.get_current_active_user)]
+):
+    """
+    Dispara o processo de web scraping. (Endpoint protegido)
+    """
+    # Em um cenário real, aqui você chamaria a lógica de scraping.
+    # Por exemplo: os.system("python scripts/scraper.py")
+    return {"message": f"Scraping triggered by {current_user.username}. (Simulated)"}
+
+# Inclui o roteador de autenticação na aplicação principal
+app.include_router(auth_routes.router)

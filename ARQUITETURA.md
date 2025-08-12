@@ -31,33 +31,16 @@ O pipeline de dados foi desenhado para ser modular e escalável, seguindo as eta
 
 ## 2. Arquitetura da Solução
 
-A arquitetura será baseada em microsserviços, separando as responsabilidades:
+A arquitetura foi atualizada para incluir módulos de autenticação e geração de insights, tornando-a mais robusta e preparada para cenários de produção.
 
-*   **Módulo de Scraping (`scripts/`):** Contém a lógica de extração de dados. Pode ser executado de forma independente e agendada (ex: com um CronJob).
-*   **Módulo da API (`api/`):** Contém a lógica da API (endpoints, validação de dados).
-*   **Módulo de Dados (`data/`):** Armazena os dados brutos e processados.
+*   **Módulo de Scraping (`scripts/`):** Responsável pela extração de dados. Sem alterações.
+*   **Módulo de Dados (`data/`):** Armazena os dados extraídos. Sem alterações.
+*   **Módulo da API (`api/`):**
+    *   **`main.py`:** Orquestra as rotas e a lógica principal.
+    *   **`insights.py`:** Contém a lógica para gerar estatísticas e insights a partir dos dados dos livros.
+    *   **`auth/`:** Submódulo que implementa a autenticação de usuários via JWT, protegendo endpoints sensíveis.
 
-```mermaid
-graph TD
-    A[books.toscrape.com] -->|1. Extração| B(Script de Scraping);
-    B -->|2. Salva dados| C[data/books.csv];
-    C -->|3. Carrega dados| D{API RESTful (FastAPI)};
-    D -->|4. Endpoints| E[Consumidores];
 
-    subgraph "Servidor (Deploy)"
-        D
-    end
-
-    subgraph "Pipeline de Dados (Execução Local/Agendada)"
-        B --> C
-    end
-
-    subgraph "Consumidores da API"
-        E --> F[Cientista de Dados];
-        E --> G[App de Recomendação];
-        E --> H[Outros Serviços];
-    end
-```
 
 ## 3. Cenário de Uso para Ciência de Dados e Machine Learning
 
@@ -65,17 +48,30 @@ Um cientista de dados pode utilizar a API para obter um dataset limpo e estrutur
 
 **Exemplo de Workflow:**
 
-1.  **Coleta de Dados:** O cientista faz uma chamada ao endpoint `GET /api/v1/books` para obter todos os dados dos livros.
-2.  **Análise Exploratória:** Utiliza os endpoints de estatísticas (`GET /api/v1/stats/overview`, `GET /api/v1/stats/categories`) para entender a distribuição dos dados.
-3.  **Pré-processamento:** Utiliza os dados obtidos para criar features para o modelo (ex: one-hot encoding para categorias, normalização de preços).
+1.  **Autenticação:** O consumidor obtém um token de acesso via `POST /api/v1/auth/login`.
+2.  **Coleta de Dados:** Utiliza o token para acessar endpoints protegidos, como `GET /api/v1/books`, para obter os dados.
+3.  **Análise Exploratória:** Consome os endpoints do módulo de insights para entender os dados:
+    *   `GET /api/v1/stats/overview`: Visão geral das métricas.
+    *   `GET /api/v1/stats/categories`: Distribuição de livros por categoria.
+    *   `GET /api/v1/books/top-rated`: Livros com melhores avaliações.
+4.  **Pré-processamento:** Utiliza os dados obtidos para criar features para o modelo.
 4.  **Treinamento do Modelo:** Treina um modelo de recomendação (ex: filtragem colaborativa ou baseada em conteúdo) com os dados.
 5.  **Integração:** Após o treinamento, o modelo pode ser integrado à API ou a um serviço separado que consome a API para obter dados de novos livros.
 
 ## 4. Plano de Integração com Modelos de ML
 
-Para suportar a integração com modelos de ML, a API pode ser estendida com os seguintes endpoints (conforme sugerido nos desafios bônus):
+A API foi estendida com endpoints de autenticação e insights:
 
-*   `GET /api/v1/ml/features`: Retornaria os dados dos livros já formatados como um vetor de features, prontos para serem consumidos por um modelo.
-*   `POST /api/v1/ml/predictions`: Um endpoint que recebe os dados de um novo livro (ou um ID de usuário) e retorna uma predição (ex: recomendação de livros similares).
+### Endpoints de Autenticação (`/api/v1/auth`)
 
-Essa arquitetura permite que o pipeline de dados e a API de serviço evoluam de forma independente do ciclo de vida dos modelos de Machine Learning.
+*   `POST /login`: Autentica um usuário e retorna um token JWT.
+*   `POST /refresh`: Atualiza um token de acesso expirado.
+
+### Endpoints de Insights e Estatísticas
+
+*   `GET /api/v1/stats/overview`: Retorna uma visão geral dos dados, como número total de livros e preço médio.
+*   `GET /api/v1/stats/categories`: Retorna estatísticas de livros por categoria.
+*   `GET /api/v1/books/top-rated`: Lista os livros com a maior avaliação.
+*   `GET /api/v1/books/price-range`: Filtra livros por uma faixa de preço.
+
+Essa arquitetura permite que o pipeline de dados e a API de serviço evoluam de forma independente do ciclo de vida dos modelos de Machine Learning, com uma camada de segurança e análise de dados aprimorada.
