@@ -8,7 +8,9 @@ A arquitetura do projeto é dividida em três componentes principais:
 
 1.  **Web Scraper (`scripts/scraper.py`):** Um script Python que navega pelo site `books.toscrape.com`, extrai os dados de todos os livros e os salva em um arquivo `data/books.csv`.
 2.  **Armazenamento (`data/books.csv`):** Um arquivo CSV que armazena os dados extraídos, servindo como nossa base de dados local.
-3.  **API RESTful (`api/main.py`):** Uma API desenvolvida com FastAPI que lê os dados do arquivo CSV e os expõe através de endpoints HTTP.
+3.  **API RESTful (`api/`):** Uma API desenvolvida com FastAPI que expõe os dados através de endpoints HTTP. A API agora inclui:
+    *   **Módulo de Insights (`api/insights.py`):** Funções para extrair estatísticas e insights dos dados.
+    *   **Módulo de Autenticação (`api/auth/`):** Sistema de autenticação de usuários com JWT para proteger rotas.
 
 Para mais detalhes, consulte o documento [ARQUITETURA.md](ARQUITETURA.md).
 
@@ -117,6 +119,27 @@ A documentação interativa da API (Swagger UI) é gerada automaticamente pelo F
         ]
         ```
 
+#### Estatísticas e Insights
+
+*   `GET /api/v1/stats/overview`
+    *   **Descrição:** Retorna uma visão geral dos dados, como o número total de livros, o preço médio e a contagem de livros por avaliação.
+*   `GET /api/v1/stats/categories`
+    *   **Descrição:** Retorna estatísticas detalhadas por categoria, incluindo o número de livros e o preço médio.
+*   `GET /api/v1/books/top-rated`
+    *   **Descrição:** Lista os livros com a avaliação mais alta (cinco estrelas).
+*   `GET /api/v1/books/price-range?min_price={min}&max_price={max}`
+    *   **Descrição:** Filtra livros que estão dentro de uma faixa de preço especificada.
+
+#### Autenticação
+
+*   `POST /api/v1/auth/login`
+    *   **Descrição:** Autentica um usuário com `username` e `password` e retorna um `access_token` JWT.
+*   `POST /api/v1/auth/refresh`
+    *   **Descrição:** Recebe um `access_token` válido (mesmo que expirado) e retorna um novo `access_token`.
+
 ## Deploy
 
 O projeto está configurado para deploy em plataformas como Heroku ou Render usando o `Procfile` e o `requirements.txt`.
+
+A aplicação está disponível em produção no seguinte endereço:
+[https://tech-challenge-books-vqh7.onrender.com/docs](https://tech-challenge-books-vqh7.onrender.com/docs)
