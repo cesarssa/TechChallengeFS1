@@ -12,11 +12,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
-    Decodes the access token, validates it, and returns the current user.
+    Decodifica o token de acesso, valida e retorna o usuário atual.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Não foi possível validar as credenciais",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -37,8 +37,8 @@ async def get_current_active_user(
     current_user: Annotated[schemas.User, Depends(get_current_user)]
 ):
     """
-    Checks if the current user is active.
+    Verifica se o usuário atual está ativo.
     """
     if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="Usuário inativo")
     return current_user
