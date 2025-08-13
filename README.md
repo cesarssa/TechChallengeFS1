@@ -142,4 +142,4 @@ A documentação interativa da API (Swagger UI) é gerada automaticamente pelo F
 O projeto está configurado para deploy em plataformas como Heroku ou Render usando o `Procfile` e o `requirements.txt`.
 
 A aplicação está disponível em produção em:
-[https://tech-challenge-v1.onrender.com/docs/docs](https://tech-challenge-v1.onrender.com/docs/docs)
+[https://tech-challenge-v1.onrender.com/docs](https://tech-challenge-v1.onrender.com/docs)
